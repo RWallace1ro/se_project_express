@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
-const router = require("express").Router();
-// const mainRouter = require("./routes/index");
-
-router.get("/", () => console.log("GET clothingItems"));
-router.post("/:userId", () => console.log("POST clothingItems"));
-router.delete("/", () => console.log("Delete clothingItems by ID"));
+const validator = require("validator");
 
 const clothingItemSchema = new mongoose.Schema({
   name: {
