@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
+// const clothingItems = require("../controllers/clothingItems")
 
 const app = express();
 
@@ -12,6 +13,13 @@ mongoose
     console.log("Connected to DB");
   })
   .catch(console.error);
+
+app.use((req, res, next) => {
+  req.user = {
+    _id: "65f1085cead38da1459e9b41",
+  };
+  next();
+});
 
 app.use(express.json());
 app.use("/", mainRouter);
