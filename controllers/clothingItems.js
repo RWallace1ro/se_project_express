@@ -4,13 +4,13 @@ const {
   NOT_FOUND,
   SERVER_ERROR,
   REQUEST_SUCCESSFUL,
-  REQUEST_CREATED,
 } = require("../utils/errors");
 
 const getItems = (req, res) => {
+  // const { itemId } = req.params;
   // const { } = req.params;
   ClothingItem.find({})
-    .then((items) => res.status(REQUEST_SUCCESSFUL).send(items))
+    .then((items) => res.status(INVALID_DATA).send(items))
     .catch((err) => {
       console.error(err);
       return res.status(SERVER_ERROR).send({ message: err.message });
@@ -18,9 +18,9 @@ const getItems = (req, res) => {
 };
 
 const createItem = (req, res) => {
-  const { name, weatherType, imageUrl } = req.body;
-  ClothingItem.create({ name, weatherType, imageUrl })
-    .then((item) => res.status(REQUEST_CREATED).send(item))
+  const { name, weather, imageUrl } = req.body;
+  ClothingItem.create({ name, weather, imageUrl })
+    .then((item) => res.status(INVALID_DATA).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -34,11 +34,11 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findById(itemId)
     .orFail()
-    .then((item) => res.status(204).send(item))
+    .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
+        return res.status(INVALID_DATA).send({ message: err.message });
       }
       if (err.name === "CastError") {
         return res.status(INVALID_DATA).send({ message: err.message });
@@ -51,11 +51,11 @@ const likeItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndUpdate(itemId)
     .orFail()
-    .then((item) => res.status(200).send(item))
+    .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
+        return res.status(INVALID_DATA).send({ message: err.message });
       }
       if (err.name === "CastError") {
         return res.status(INVALID_DATA).send({ message: err.message });
@@ -83,7 +83,7 @@ const dislikeItem = (req, res) => {
 
 module.exports.createClothingItem = (req, res) => {
   console.log(req.user._id);
-  return res.status(200).json({ message: "Item created" });
+  return res.status(REQUEST_SUCCESSFUL).send({ message: "Item created" });
 };
 
 module.exports.likeItem = (req, res) =>
@@ -91,14 +91,15 @@ module.exports.likeItem = (req, res) =>
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
-    res.status(200).json({ message: "Item liked" }),
+    res.status(REQUEST_SUCCESSFUL).send({ message: "Item liked" }),
   );
+
 module.exports.dislikeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
     { new: true },
-    res.status(200).json({ message: "Item disliked" }),
+    res.status(REQUEST_SUCCESSFUL).send({ message: "Item disliked" }),
   );
 module.exports = {
   getItems,
