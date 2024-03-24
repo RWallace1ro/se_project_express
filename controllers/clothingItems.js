@@ -4,13 +4,12 @@ const {
   NOT_FOUND,
   SERVER_ERROR,
   REQUEST_SUCCESSFUL,
+  REQUEST_CREATED,
 } = require("../utils/errors");
 
 const getItems = (req, res) => {
-  // const { itemId } = req.params;
-  // const { } = req.params;
   ClothingItem.find({})
-    .then((items) => res.status(INVALID_DATA).send(items))
+    .then((items) => res.status(REQUEST_SUCCESSFUL).send(items))
     .catch((err) => {
       console.error(err);
       return res.status(SERVER_ERROR).send({ message: err.message });
@@ -20,7 +19,7 @@ const getItems = (req, res) => {
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   ClothingItem.create({ name, weather, imageUrl })
-    .then((item) => res.status(INVALID_DATA).send(item))
+    .then((item) => res.status(REQUEST_CREATED).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -38,7 +37,7 @@ const deleteItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(INVALID_DATA).send({ message: err.message });
+        return res.status(NOT_FOUND).send({ message: err.message });
       }
       if (err.name === "CastError") {
         return res.status(INVALID_DATA).send({ message: err.message });
@@ -46,6 +45,25 @@ const deleteItem = (req, res) => {
       return res.status(SERVER_ERROR).send({ message: err.message });
     });
 };
+
+// const deleteItem = (req, res) => {
+//   const { itemId } = req.params;
+//   ClothingItem.findByIdAndDelete(itemId)
+
+//     .then((item) => {
+//       if (!item) {
+//         return res.status(NOT_FOUND).send({ message: "Item not found" });
+//       }
+//       return res.status(REQUEST_SUCCESSFUL).send(item);
+//     })
+//     .catch((err) => {
+//       console.error(err);
+//       if (err.name === "CastError" || err.name === "DocumentNotFoundError") {
+//         return res.status(NOT_FOUND).send({ message: err.message });
+//       }
+//       return res.status(SERVER_ERROR).send({ message: err.message });
+//     });
+// };
 
 const likeItem = (req, res) => {
   const { itemId } = req.params;
@@ -55,7 +73,7 @@ const likeItem = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(INVALID_DATA).send({ message: err.message });
+        return res.status(NOT_FOUND).send({ message: err.message });
       }
       if (err.name === "CastError") {
         return res.status(INVALID_DATA).send({ message: err.message });
@@ -68,11 +86,11 @@ const dislikeItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findById(itemId)
     .orFail()
-    .then((item) => res.status(NOT_FOUND).send(item))
+    .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
+        return res.status(REQUEST_SUCCESSFUL).send({ message: err.message });
       }
       if (err.name === "CastError") {
         return res.status(INVALID_DATA).send({ message: err.message });

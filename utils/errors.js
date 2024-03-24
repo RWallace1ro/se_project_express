@@ -1,7 +1,3 @@
-// export const INVALID_DATA = "400";
-// export const NOT_FOUND = "404";
-// export const SERVER_ERROR = "500";
-
 const ERROR_CODES = {
   REQUEST_SUCCESSFUL: 200,
   REQUEST_CREATED: 201,
@@ -11,5 +7,3 @@ const ERROR_CODES = {
 };
 
 module.exports = ERROR_CODES;
-
-// export const BAD_REQUEST_STATUS_CODE = 400;
