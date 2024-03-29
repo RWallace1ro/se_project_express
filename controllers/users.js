@@ -8,7 +8,6 @@ const {
 } = require("../utils/errors");
 
 const getUsers = (req, res) => {
-  // const {} = req.params;
   User.find({})
     .then((users) => res.status(REQUEST_SUCCESSFUL).send(users))
     .catch((err) => {

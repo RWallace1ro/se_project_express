@@ -7,7 +7,7 @@ const {
   REQUEST_CREATED,
 } = require("../utils/errors");
 
-const getItems = (req, res) => {
+const getItems = (_getItems, res) => {
   ClothingItem.find({})
     .then((items) => res.status(REQUEST_SUCCESSFUL).send(items))
     .catch((err) => {
@@ -30,10 +30,17 @@ const createItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const { itemId } = req.params;
-  ClothingItem.findById(itemId)
+  const { userId } = req.params;
+  console.log(userId);
+  ClothingItem.deleteOne({ _id: userId })
     .orFail()
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
+    // if (result.deletedCount === 0) {
+    //   return res.status(NOT_FOUND).send({ message: "Item not found" });
+    // }
+    // res
+    //   .status(REQUEST_SUCCESSFUL)
+    //   .send({ message: "Item successfully deleted." })
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
@@ -66,8 +73,8 @@ const deleteItem = (req, res) => {
 // };
 
 const likeItem = (req, res) => {
-  const { itemId } = req.params;
-  ClothingItem.findByIdAndUpdate(itemId)
+  const { userId } = req.params;
+  ClothingItem.findById(userId)
     .orFail()
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
@@ -83,8 +90,8 @@ const likeItem = (req, res) => {
 };
 
 const dislikeItem = (req, res) => {
-  const { itemId } = req.params;
-  ClothingItem.findById(itemId)
+  const { userId } = req.params;
+  ClothingItem.findById(userId)
     .orFail()
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
@@ -105,7 +112,7 @@ module.exports.createClothingItem = (req, res) => {
 };
 
 module.exports.likeItem = (req, res) =>
-  ClothingItem.findByIdAndUpdate(
+  ClothingItem.findById(
     req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
@@ -113,7 +120,7 @@ module.exports.likeItem = (req, res) =>
   );
 
 module.exports.dislikeItem = (req, res) =>
-  ClothingItem.findByIdAndUpdate(
+  ClothingItem.findById(
     req.params.itemId,
     { $pull: { likes: req.user._id } },
     { new: true },
