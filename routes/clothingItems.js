@@ -9,7 +9,7 @@ const {
 
 router.get("/", getItems);
 router.post("/", createItem);
-router.delete("/:userId", deleteItem);
+router.delete("/:itemId", deleteItem);
 router.put("/:itemId/likes", likeItem);
 router.delete("/:itemId/likes", dislikeItem);
 

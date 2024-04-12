@@ -30,20 +30,17 @@ const createItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const { userId } = req.params;
-  console.log(userId);
-  ClothingItem.deleteOne({ _id: userId })
+  const { itemId } = req.params;
+  console.log(itemId);
+  ClothingItem.deleteOne({ _id: itemId })
     .orFail()
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
-    // if (result.deletedCount === 0) {
-    //   return res.status(NOT_FOUND).send({ message: "Item not found" });
-    // }
-    // res
-    //   .status(REQUEST_SUCCESSFUL)
-    //   .send({ message: "Item successfully deleted." })
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+      if (res.deletedCount === 0) {
         return res.status(NOT_FOUND).send({ message: err.message });
       }
       if (err.name === "CastError") {
@@ -53,28 +50,9 @@ const deleteItem = (req, res) => {
     });
 };
 
-// const deleteItem = (req, res) => {
-//   const { itemId } = req.params;
-//   ClothingItem.findByIdAndDelete(itemId)
-
-//     .then((item) => {
-//       if (!item) {
-//         return res.status(NOT_FOUND).send({ message: "Item not found" });
-//       }
-//       return res.status(REQUEST_SUCCESSFUL).send(item);
-//     })
-//     .catch((err) => {
-//       console.error(err);
-//       if (err.name === "CastError" || err.name === "DocumentNotFoundError") {
-//         return res.status(NOT_FOUND).send({ message: err.message });
-//       }
-//       return res.status(SERVER_ERROR).send({ message: err.message });
-//     });
-// };
-
 const likeItem = (req, res) => {
-  const { userId } = req.params;
-  ClothingItem.findById(userId)
+  const { itemId } = req.params;
+  ClothingItem.findById(itemId)
     .orFail()
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
@@ -90,14 +68,14 @@ const likeItem = (req, res) => {
 };
 
 const dislikeItem = (req, res) => {
-  const { userId } = req.params;
-  ClothingItem.findById(userId)
+  const { itemId } = req.params;
+  ClothingItem.findById(itemId)
     .orFail()
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(REQUEST_SUCCESSFUL).send({ message: err.message });
+        return res.status(NOT_FOUND).send({ message: err.message });
       }
       if (err.name === "CastError") {
         return res.status(INVALID_DATA).send({ message: err.message });

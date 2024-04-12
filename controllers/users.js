@@ -7,7 +7,7 @@ const {
   REQUEST_SUCCESSFUL,
 } = require("../utils/errors");
 
-const getUsers = (req, res) => {
+const getUsers = (_getUsers, res) => {
   User.find({})
     .then((users) => res.status(REQUEST_SUCCESSFUL).send(users))
     .catch((err) => {

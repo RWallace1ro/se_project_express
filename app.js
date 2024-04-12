@@ -23,7 +23,6 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use("/", mainRouter);
-// router.use();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
