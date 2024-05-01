@@ -11,6 +11,7 @@ const {
   // REQUEST_CONFLICT,
   UNAUTHORIZED,
   NOT_FOUND,
+  // REQUEST_CONFLICT,
 } = require("../utils/errors");
 
 const login = (req, res) => {
@@ -64,9 +65,9 @@ const updateUserProfile = (req, res) => {
         return res.status(INVALID_DATA).send({ message: "Invalid data " });
       }
 
-      // if (err.name === "CastError") {
-      //   return res.status(INVALID_DATA).send({ message: "Invalid data" });
-      // }
+      if (err.name === "CastError") {
+        return res.status(INVALID_DATA).send({ message: "Invalid data" });
+      }
 
       return res
         .status(SERVER_ERROR)
@@ -105,20 +106,22 @@ const updateUserProfile = (req, res) => {
 // };
 
 const createUser = (req, res) => {
-  const { name, avatar, email } = req.body;
-  bcrypt.hash(req.body.password, 10);
-  User.create({ name, avatar, email })
-    // .then((user) => res.status(REQUEST_SUCCESSFUL).send({ user }))
+  const { name, avatar } = req.body;
+  bcrypt
+    .hash(req.body.password, 10)
     .then((hash) =>
       User.create({
+        name,
+        avatar,
         email: req.body.email,
         password: hash,
       }),
     )
-    .then((user) => res.send(user))
+    .then((user) => res.status(REQUEST_SUCCESSFUL).send({ user }))
+
     .catch((err) => {
       console.error(err);
-      if (err.password === 11000) {
+      if (err.code === 11000) {
         return res
           .status(INVALID_DATA)
           .send({ message: "Email already exists" });

@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
     minlength: 2,
     maxlength: 30,
   },
+
   avatar: {
     type: String,
     required: [true, " The avatar field is required"],
@@ -18,6 +19,7 @@ const userSchema = new mongoose.Schema({
       message: "You must enter a valid URL",
     },
   },
+
   email: {
     type: String,
     required: [true, " The email field is required"],
@@ -33,19 +35,16 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, " The password field is required"],
+    // minlength: 8,
     select: false,
     validate: {
       validator(value) {
-        return validator.isPassword(value);
+        // return validator.isPassword(value);
+        return /^(?=.*[a-zA-Z]+){8,}$/.test(value);
       },
       message: "You must enter a valid passowrd",
     },
   },
-
-  // newUpdate: {
-  //   type: String,
-  //   required: [true, "The new update field is required"],
-  // },
 });
 
 module.exports = mongoose.model("user", userSchema);
