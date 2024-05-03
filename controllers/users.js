@@ -11,6 +11,7 @@ const {
   // REQUEST_CONFLICT,
   UNAUTHORIZED,
   NOT_FOUND,
+  REQUEST_CREATED,
   // REQUEST_CONFLICT,
 } = require("../utils/errors");
 
@@ -105,20 +106,23 @@ const updateUserProfile = (req, res) => {
 //     });
 // };
 
-const createUser = (req, res) => {
-  const { name, avatar } = req.body;
-  bcrypt
-    .hash(req.body.password, 10)
-    .then((hash) =>
-      User.create({
-        name,
-        avatar,
-        email: req.body.email,
-        password: hash,
-      }),
-    )
-    .then((user) => res.status(REQUEST_SUCCESSFUL).send({ user }))
+const createUser = async (req, res) => {
+  const { name, avatar, password, email } = req.body;
 
+  const hashedPassword = await bcrypt.hash(password, 10);
+  // .then((hashedPassword) =>
+  const user = await User.create({
+    name,
+    avatar,
+    email,
+    password: hashedPassword,
+  });
+
+  res
+    .status(REQUEST_CREATED)
+    .send({ user })
+
+    // .then((user) => res.status(REQUEST_SUCCESSFUL).send({ user }))
     .catch((err) => {
       console.error(err);
       if (err.code === 11000) {
@@ -126,9 +130,11 @@ const createUser = (req, res) => {
           .status(INVALID_DATA)
           .send({ message: "Email already exists" });
       }
+
       if (err.name === "ValidationError") {
         return res.status(INVALID_DATA).send({ message: "Invalid data" });
       }
+
       return res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });

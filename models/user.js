@@ -35,15 +35,15 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, " The password field is required"],
-    // minlength: 8,
+    minlength: 8,
     select: false,
-    validate: {
-      validator(value) {
-        // return validator.isPassword(value);
-        return /^(?=.*[a-zA-Z]+){8,}$/.test(value);
-      },
-      message: "You must enter a valid passowrd",
-    },
+    //   validate: {
+    //     validator(value) {
+    //       // return validator.isPassword(value);
+    //       return /^{8,}$/.test(value);
+    //     },
+    //     message: "You must enter a valid passowrd",
+    //   },
   },
 });
 
