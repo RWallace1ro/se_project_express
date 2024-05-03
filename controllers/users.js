@@ -106,12 +106,12 @@ const updateUserProfile = (req, res) => {
 //     });
 // };
 
-const createUser = async (req, res) => {
+const createUser = (req, res) => {
   const { name, avatar, password, email } = req.body;
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = bcrypt.hash(password, 10);
   // .then((hashedPassword) =>
-  const user = await User.create({
+  const user = User.create({
     name,
     avatar,
     email,
