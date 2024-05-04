@@ -8,33 +8,56 @@ const {
   INVALID_DATA,
   SERVER_ERROR,
   REQUEST_SUCCESSFUL,
-  // REQUEST_CONFLICT,
   UNAUTHORIZED,
   NOT_FOUND,
-  REQUEST_CREATED,
-  // REQUEST_CONFLICT,
+  // REQUEST_CREATED,
+  REQUEST_CONFLICT,
 } = require("../utils/errors");
 
 const login = (req, res) => {
   const { email, password } = req.body;
-  User.findUserByCredentials({ email, password });
+  // User.findUserByCredentials({ email, password });
   User.findOne({ email })
     .select("+password")
     .then((user) => {
-      bcrypt.hash(password);
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
-      res.send(REQUEST_SUCCESSFUL).send({ user, token });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(UNAUTHORIZED).SEND({ message: "Invalid email or password" });
-    });
+      if (!user) {
+        return res
+          .status(UNAUTHORIZED)
+          .send({ message: "Invalid email or password" });
+      }
 
-  return res
-    .status(SERVER_ERROR)
-    .send({ message: "An error has occurred on the server." });
+      // bcrypt.hash(password);
+      bcrypt
+        .compare(password, user.password, (err, isMatch) => {
+          if (err) {
+            console.error(err);
+            return res
+              .status(SERVER_ERROR)
+              .send({ message: "An error has occurred on the server" });
+          }
+
+          if (!isMatch) {
+            return res
+              .status(UNAUTHORIZED)
+              .send({ message: "Invalid email or password" });
+          }
+
+          const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+            expiresIn: "7d",
+          });
+          res
+            .status(REQUEST_SUCCESSFUL)
+            .send({ user: { name: user.name, email: user.email }, token });
+        })
+
+        .catch((err) => {
+          console.error(err);
+          // res.status(UNAUTHORIZED).SEND({ message: "Invalid email or password" });
+          return res
+            .status(SERVER_ERROR)
+            .send({ message: "An error has occurred on the server." });
+        });
+    });
 };
 
 const getCurrentUser = (req, res) => {
@@ -54,21 +77,28 @@ const getCurrentUser = (req, res) => {
 
 const updateUserProfile = (req, res) => {
   const { name, avatar } = req.body;
-  User.updateProfile({ name, avatar }, { _id: req.user._id }, { new: true })
-    .then((user) => res.status(REQUEST_SUCCESSFUL).send(user))
+  const userId = req.user._id;
+  User.findByIdAndUpdate(userId, { name, avatar }, { new: true })
+
+    .then((user) => {
+      if (!user) {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+      return res.status(REQUEST_SUCCESSFUL).send(user);
+    })
     .catch((err) => {
       console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).SEND({ message: "User not found" });
-      }
+      // if (err.name === "DocumentNotFoundError") {
+      //   return res.status(NOT_FOUND).SEND({ message: "User not found" });
+      // }
 
       if (err.name === "ValidationError") {
         return res.status(INVALID_DATA).send({ message: "Invalid data " });
       }
 
-      if (err.name === "CastError") {
-        return res.status(INVALID_DATA).send({ message: "Invalid data" });
-      }
+      // if (err.name === "CastError") {
+      //   return res.status(INVALID_DATA).send({ message: "Invalid data" });
+      // }
 
       return res
         .status(SERVER_ERROR)
@@ -107,22 +137,30 @@ const updateUserProfile = (req, res) => {
 // };
 
 const createUser = (req, res) => {
-  const { name, avatar, password, email } = req.body;
+  const { name, avatar } = req.body;
+  bcrypt
+    .hash(req.body.password, 10)
+    .then((hash) =>
+      User.create({
+        name,
+        avatar,
+        email: req.body.email,
+        password: hash,
+      }),
+    )
+    .then((user) => {
+      res
+        .status(REQUEST_CONFLICT)
+        .send({ user: { message: "Email already exists" } });
 
-  const hashedPassword = bcrypt.hash(password, 10);
-  // .then((hashedPassword) =>
-  const user = User.create({
-    name,
-    avatar,
-    email,
-    password: hashedPassword,
-  });
+      res.status(REQUEST_SUCCESSFUL).send({
+        message: "User created",
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      });
+    })
 
-  res
-    .status(REQUEST_CREATED)
-    .send({ user })
-
-    // .then((user) => res.status(REQUEST_SUCCESSFUL).send({ user }))
     .catch((err) => {
       console.error(err);
       if (err.code === 11000) {
@@ -135,6 +173,8 @@ const createUser = (req, res) => {
         return res.status(INVALID_DATA).send({ message: "Invalid data" });
       }
 
+      // .catch((err) => {
+      //   console.error("Error hashing password:", err);
       return res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });

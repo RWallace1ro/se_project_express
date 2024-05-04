@@ -23,12 +23,12 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, " The email field is required"],
-    validate: {
-      validator(value) {
-        return validator.isEmail(value);
-      },
-      message: "You must enter a valid email",
-    },
+    // validate: {
+    //   validator(value) {
+    //     return validator.isEmail(value);
+    //   },
+    //   message: "You must enter a valid email",
+    // },
   },
   // /
 
@@ -37,13 +37,6 @@ const userSchema = new mongoose.Schema({
     required: [true, " The password field is required"],
     minlength: 8,
     select: false,
-    //   validate: {
-    //     validator(value) {
-    //       // return validator.isPassword(value);
-    //       return /^{8,}$/.test(value);
-    //     },
-    //     message: "You must enter a valid passowrd",
-    //   },
   },
 });
 
