@@ -39,7 +39,7 @@ const deleteItem = (req, res) => {
   console.log(itemId);
   ClothingItem.deleteOne({ _id: itemId })
     .orFail()
-    .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
+    .then((item) => res.status(FORBIDDEN_ACCESS).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
