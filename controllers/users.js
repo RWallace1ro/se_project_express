@@ -72,8 +72,7 @@ const getCurrentUser = (req, res) => {
 
       res.status(REQUEST_SUCCESSFUL).send({
         message: "User found",
-        user: { name: user.name, email: user.email },
-        token,
+        user: { name: user.name, email: user.email, token },
       });
     })
     .catch((err) => {
@@ -123,6 +122,12 @@ const updateUserProfile = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
+  // User.findOne({ email: email });
+  // then((existingUser) => {
+  //   if (existingUser) {
+  //     res.status(REQUEST_CONFLICT).send({ message: "Eamil already exists" });
+  //   }
+
   bcrypt
     .hash(password, 10)
     .then((hashedPassword) =>
@@ -135,7 +140,7 @@ const createUser = (req, res) => {
     )
 
     .then((user) => {
-      res.status(REQUEST_CREATED).send({
+      return res.status(REQUEST_CREATED).send({
         message: "User created",
         name: user.name,
         email: user.email,
