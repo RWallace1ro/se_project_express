@@ -18,7 +18,7 @@ const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    res
+    return res
       .status(INVALID_DATA)
       .send({ message: "Email and password are required" });
   }
@@ -63,14 +63,14 @@ const getCurrentUser = (req, res) => {
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        res.status(NOT_FOUND).send({ message: "User not found" });
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
 
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
 
-      res.status(REQUEST_SUCCESSFUL).send({
+      return res.status(REQUEST_SUCCESSFUL).send({
         message: "User found",
         user: { name: user.name, email: user.email, token },
       });
@@ -82,7 +82,7 @@ const getCurrentUser = (req, res) => {
         res.status(NOT_FOUND).send({ message: "User not found" });
       }
 
-      res
+      return res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });
     });
@@ -139,38 +139,42 @@ const createUser = (req, res) => {
       }),
     )
 
-    .then((user) => {
-      return res.status(REQUEST_CREATED).send({
-        message: "User created",
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-      });
-    })
+    .then((user) =>
+      res
+        .status(REQUEST_CREATED)
+        .send({
+          message: "User created",
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+        })
 
-    .catch((err) => {
-      console.error(err);
+        .catch((err) => {
+          console.error(err);
 
-      if (err.code === 11000) {
-        return res
-          .status(REQUEST_CONFLICT)
-          .send({ message: "Email already exists" });
-      }
+          if (err.code === 11000) {
+            return res
+              .status(REQUEST_CONFLICT)
+              .send({ message: "Email already exists" });
+          }
 
-      if (err.code === email) {
-        res.status(INVALID_DATA).send({ message: "Invalid email format" });
-      }
+          if (err.code === email) {
+            return res
+              .status(INVALID_DATA)
+              .send({ message: "Invalid email format" });
+          }
 
-      if (err.name === "ValidationError") {
-        return res
-          .status(INVALID_DATA)
-          .send({ message: "Invalid data provided" });
-      }
+          if (err.name === "ValidationError") {
+            return res
+              .status(INVALID_DATA)
+              .send({ message: "Invalid data provided" });
+          }
 
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
-    });
+          return res
+            .status(SERVER_ERROR)
+            .send({ message: "An error has occurred on the server." });
+        }),
+    );
 };
 
 module.exports = {
