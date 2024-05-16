@@ -75,14 +75,15 @@ const getCurrentUser = (req, res) => {
         user: { name: user.name, email: user.email, token },
       });
     })
+
     .catch((err) => {
       console.error(err);
 
       if (err.name === "DocumentNotFoundError" || err.name === "CastError") {
-        res.status(NOT_FOUND).send({ message: "User not found" });
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
 
-      return res
+      res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });
     });
@@ -101,17 +102,10 @@ const updateUserProfile = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      // if (err.name === "DocumentNotFoundError") {
-      //   return res.status(NOT_FOUND).SEND({ message: "User not found" });
-      // }
 
       if (err.name === "ValidationError") {
         return res.status(INVALID_DATA).send({ message: "Invalid data " });
       }
-
-      // if (err.name === "CastError") {
-      //   return res.status(INVALID_DATA).send({ message: "Invalid data" });
-      // }
 
       return res
         .status(SERVER_ERROR)
@@ -122,59 +116,53 @@ const updateUserProfile = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  // User.findOne({ email: email });
-  // then((existingUser) => {
-  //   if (existingUser) {
-  //     res.status(REQUEST_CONFLICT).send({ message: "Eamil already exists" });
-  //   }
+  if (!email || !password || !name) {
+    return res.status(400).send({ message: "Missing required fields" });
+  }
 
-  bcrypt
-    .hash(password, 10)
-    .then((hashedPassword) =>
-      User.create({
+  User.findOne({ email: email })
+    .then((existingUser) => {
+      if (existingUser) {
+        res.status(REQUEST_CONFLICT).send({ message: "Email already exists" });
+        return null;
+      }
+
+      return bcrypt.hash(password, 10);
+    })
+    .then((hashedPassword) => {
+      if (!hashedPassword) return;
+      return User.create({
         name,
         avatar,
         email,
         password: hashedPassword,
-      }),
-    )
+      });
+    })
+    .then((user) => {
+      if (!user) return;
+      res.status(REQUEST_CREATED).send({
+        message: "User created",
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      if (res.headersSent) {
+        return;
+      }
 
-    .then((user) =>
-      res
-        .status(REQUEST_CREATED)
-        .send({
-          message: "User created",
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-        })
-
-        .catch((err) => {
-          console.error(err);
-
-          if (err.code === 11000) {
-            return res
-              .status(REQUEST_CONFLICT)
-              .send({ message: "Email already exists" });
-          }
-
-          if (err.code === email) {
-            return res
-              .status(INVALID_DATA)
-              .send({ message: "Invalid email format" });
-          }
-
-          if (err.name === "ValidationError") {
-            return res
-              .status(INVALID_DATA)
-              .send({ message: "Invalid data provided" });
-          }
-
-          return res
-            .status(SERVER_ERROR)
-            .send({ message: "An error has occurred on the server." });
-        }),
-    );
+      if (err.code === 11000) {
+        res.status(REQUEST_CONFLICT).send({ message: "Email already exists" });
+      } else if (err.name === "ValidationError") {
+        res.status(INVALID_DATA).send({ message: "Invalid data provided" });
+      } else {
+        res
+          .status(SERVER_ERROR)
+          .send({ message: "An error has occurred on the server." });
+      }
+    });
 };
 
 module.exports = {

@@ -36,10 +36,11 @@ const createItem = (req, res) => {
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
+
   console.log(itemId);
   ClothingItem.deleteOne({ _id: itemId })
     .orFail()
-    .then((item) => res.status(FORBIDDEN_ACCESS).send(item))
+    .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
@@ -51,7 +52,7 @@ const deleteItem = (req, res) => {
           .send({ message: "Not authorized to delete item" });
       }
       if (res.deletedCount === 0) {
-        return res.status(NOT_FOUND).send({ message: err.message });
+        return res.status(REQUEST_SUCCESSFUL).send({ message: err.message });
       }
       if (err.name === "CastError") {
         return res.status(INVALID_DATA).send({ message: "Invalid data" });
