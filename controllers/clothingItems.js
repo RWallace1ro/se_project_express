@@ -43,6 +43,7 @@ const deleteItem = (req, res) => {
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
       console.error(err);
+
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: err.message });
       }
@@ -52,7 +53,7 @@ const deleteItem = (req, res) => {
           .send({ message: "Not authorized to delete item" });
       }
       if (res.deletedCount === 0) {
-        return res.status(REQUEST_SUCCESSFUL).send({ message: err.message });
+        return res.status(FORBIDDEN_ACCESS).send({ message: err.message });
       }
       if (err.name === "CastError") {
         return res.status(INVALID_DATA).send({ message: "Invalid data" });
