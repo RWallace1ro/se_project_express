@@ -11,7 +11,6 @@ const {
   NOT_FOUND,
   REQUEST_CONFLICT,
   REQUEST_CREATED,
-  // REQUEST_CREATED,
 } = require("../utils/errors");
 
 const login = (req, res) => {
@@ -58,7 +57,7 @@ const login = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.params;
+  const { userId } = req.body;
 
   User.findById(userId)
     .then((user) => {
@@ -135,6 +134,15 @@ const createUser = (req, res) => {
         avatar: user.avatar,
       }),
     )
+
+    // .then((user) =>
+    //   res.status(REQUEST_CONFLICT).send({
+    //     message: "Email alreadt exists",
+    //     name: user.name,
+    //     email: user.email,
+    //     avatar: user.avatar,
+    //   }),
+    // )
 
     .catch((err) => {
       console.error(err);

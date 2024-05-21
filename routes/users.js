@@ -8,13 +8,10 @@ const {
 
 const auth = require("../middleware/auth");
 
-router.get("/me", auth, getCurrentUser);
-router.patch("/me", auth, updateUserProfile);
-
-// router.get("/users/userId/", auth, getCurrentUser);
-// router.patch("/users /userId", auth, updateUserProfile);
-
 router.post("/signin", login);
 router.post("/signup", createUser);
+
+router.get("/userId", auth, getCurrentUser);
+router.patch("/userId", auth, updateUserProfile);
 
 module.exports = router;
