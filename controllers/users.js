@@ -9,14 +9,16 @@ const {
   REQUEST_SUCCESSFUL,
   UNAUTHORIZED,
   NOT_FOUND,
-  REQUEST_CONFLICT,
   REQUEST_CREATED,
+  REQUEST_CONFLICT,
 } = require("../utils/errors");
 
 const login = (req, res) => {
+  console.log("trying to login");
   const { email, password } = req.body;
 
   if (!email || !password) {
+    console.log("Password is undefined");
     res
       .status(INVALID_DATA)
       .send({ message: "Email and password are required" });
@@ -26,6 +28,7 @@ const login = (req, res) => {
     .select("+password")
     .then((user) => {
       if (!user) {
+        console.log("did not find that user");
         return res
           .status(INVALID_DATA)
           .send({ message: "Invalid email or password" });
@@ -33,7 +36,7 @@ const login = (req, res) => {
 
       return bcrypt.compare(password, user.password).then((isMatch) => {
         if (!isMatch) {
-          return res
+          res
             .status(UNAUTHORIZED)
             .send({ message: "Invalid email or password" });
         }
@@ -41,7 +44,7 @@ const login = (req, res) => {
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         });
-        return res.status(REQUEST_SUCCESSFUL).send({
+        res.status(REQUEST_SUCCESSFUL).send({
           message: "Authentication successful",
           user: { name: user.name, email: user.email },
           token,
@@ -57,53 +60,71 @@ const login = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.body;
+  const userId = req.user._id;
 
   User.findById(userId)
-    .then((user) => {
+    .then((user) => { .
       if (!user) {
+        console.log("User not found:", userId);
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
 
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
-      });
+      console.log("User found:", user);
 
       return res.status(REQUEST_SUCCESSFUL).send({
         message: "User found",
-        user: { name: user.name, email: user.email, token },
+        user: {
+          name: user.name,
+          avatar: user.avatar,
+          email: user.email,
+        },
       });
     })
-
     .catch((err) => {
-      console.error(err);
+      console.error("Error finding user:", err);
 
       if (err.name === "DocumentNotFoundError" || err.name === "CastError") {
-        res.status(NOT_FOUND).send({ message: "User not found" });
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       }
 
-      res
+      return res
         .status(SERVER_ERROR)
         .send({ message: "An error has occurred on the server." });
     });
 };
 
 const updateUserProfile = (req, res) => {
-  const { name, avatar } = req.body;
   const userId = req.user._id;
-  User.findByIdAndUpdate(userId, { name, avatar }, { new: true })
+  const { name, email, avatar } = req.body;
 
+  User.findByIdAndUpdate(
+    userId,
+    { name, email, avatar },
+    { new: true, runValidators: true },
+  )
     .then((user) => {
       if (!user) {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
-      return res.status(REQUEST_SUCCESSFUL).send(user);
+
+      console.log("Updated user:", user);
+
+      return res.status(REQUEST_SUCCESSFUL).send({
+        message: "User profile updated",
+        user: {
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+        },
+      });
     })
     .catch((err) => {
       console.error(err);
 
       if (err.name === "ValidationError") {
-        return res.status(INVALID_DATA).send({ message: "Invalid data " });
+        return res
+          .status(INVALID_DATA)
+          .send({ message: "Invalid data provided" });
       }
 
       return res
@@ -115,54 +136,52 @@ const updateUserProfile = (req, res) => {
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  bcrypt
-    .hash(password, 10)
-    .then((hashedPassword) =>
-      User.create({
-        name,
-        avatar,
-        email,
-        password: hashedPassword,
-      }),
-    )
+  if (!name || !email || !password || !avatar) {
+    return res.status(INVALID_DATA).send({ message: "Invalid data provided" });
+  }
 
-    .then((user) =>
-      res.status(REQUEST_CREATED).send({
-        message: "User created",
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-      }),
-    )
-
-    // .then((user) =>
-    //   res.status(REQUEST_CONFLICT).send({
-    //     message: "Email alreadt exists",
-    //     name: user.name,
-    //     email: user.email,
-    //     avatar: user.avatar,
-    //   }),
-    // )
-
-    .catch((err) => {
-      console.error(err);
-
-      if (err.code === 11000) {
+  User.findOne({ email })
+    .then((existingUser) => {
+      if (existingUser) {
         return res
           .status(REQUEST_CONFLICT)
           .send({ message: "Email already exists" });
       }
 
-      if (err.code === email) {
-        return res
-          .status(INVALID_DATA)
-          .send({ message: "Invalid email format" });
-      }
+      return bcrypt.hash(password, 10);
+    })
+    .then((hashedPassword) => {
+      return User.create({
+        name,
+        avatar,
+        email,
+        password: hashedPassword,
+      });
+    })
+    .then((user) => {
+      return res.status(REQUEST_CREATED).send({
+        message: "User created",
+        user: {
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar,
+        },
+      });
+    })
+    .catch((err) => {
+      console.error(err);
 
       if (err.name === "ValidationError") {
+        const errorMessages = Object.values(err.errors).map((e) => e.message);
         return res
           .status(INVALID_DATA)
-          .send({ message: "Invalid data provided" });
+          .send({ message: "Invalid data provided", errors: errorMessages });
+      }
+
+      if (err.code === 11000) {
+        return res
+          .status(REQUEST_CONFLICT)
+          .send({ message: "Email already exists" });
       }
 
       return res

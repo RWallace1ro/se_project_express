@@ -16,6 +16,7 @@ const auth = (req, res, next) => {
     console.error(err);
     return res.status(UNAUTHORIZED).send({ message: "Authorization Required" });
   }
+
   req.user = payload;
   return next();
 };

@@ -6,7 +6,6 @@ const {
   REQUEST_SUCCESSFUL,
   REQUEST_CREATED,
   FORBIDDEN_ACCESS,
-  // REQUEST_CONFLICT,
 } = require("../utils/errors");
 
 const getItems = (_getItems, res) => {
@@ -38,6 +37,28 @@ const createItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
+  ClothingItem.findOne({ _id: itemId }).then((item) => {
+    if (!item) {
+      res
+        .status(REQUEST_SUCCESSFUL)
+        .send({ message: "Item successfully deleted" });
+
+      res.status(NOT_FOUND).send({ message: "Item not found" });
+    }
+
+    if (!item.owner.equals(itemId)) {
+      return res
+        .status(FORBIDDEN_ACCESS)
+        .send({ message: "Not authorized to delete item" });
+    }
+
+    return ClothingItem.deleteOne({ _id: itemId });
+  });
+
+  // if (err.name === "DocumentNotFoundError") {
+  //   return res.status(NOT_FOUND).send({ message: err.message });
+  // }
+
   console.log(itemId);
   ClothingItem.deleteOne({ _id: itemId })
     .orFail()
@@ -45,9 +66,10 @@ const deleteItem = (req, res) => {
     .catch((err) => {
       console.error(err);
 
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
-      }
+      // if (err.name === "DocumentNotFoundError") {
+      //   return res.status(NOT_FOUND).send({ message: err.message });
+      // }
+
       if (itemId.owner === req.user._id) {
         return res
           .status(FORBIDDEN_ACCESS)
