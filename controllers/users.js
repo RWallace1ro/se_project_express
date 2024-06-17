@@ -19,7 +19,7 @@ const login = (req, res) => {
 
   if (!email || !password) {
     console.log("Password is undefined");
-    res
+    return res
       .status(INVALID_DATA)
       .send({ message: "Email and password are required" });
   }
@@ -36,7 +36,7 @@ const login = (req, res) => {
 
       return bcrypt.compare(password, user.password).then((isMatch) => {
         if (!isMatch) {
-          res
+          return res
             .status(UNAUTHORIZED)
             .send({ message: "Invalid email or password" });
         }
@@ -44,7 +44,7 @@ const login = (req, res) => {
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
         });
-        res.status(REQUEST_SUCCESSFUL).send({
+        return res.status(REQUEST_SUCCESSFUL).send({
           message: "Authentication successful",
           user: { name: user.name, email: user.email },
           token,
@@ -63,7 +63,7 @@ const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
   User.findById(userId)
-    .then((user) => { .
+    .then((user) => {
       if (!user) {
         console.log("User not found:", userId);
         return res.status(NOT_FOUND).send({ message: "User not found" });
@@ -141,33 +141,33 @@ const createUser = (req, res) => {
   }
 
   User.findOne({ email })
-    .then((existingUser) => {
-      if (existingUser) {
+    .then((user) => {
+      if (user) {
         return res
           .status(REQUEST_CONFLICT)
           .send({ message: "Email already exists" });
       }
-
       return bcrypt.hash(password, 10);
     })
-    .then((hashedPassword) => {
-      return User.create({
+    .then((hashedPassword) =>
+      User.create({
         name,
         avatar,
         email,
         password: hashedPassword,
-      });
-    })
-    .then((user) => {
-      return res.status(REQUEST_CREATED).send({
+      }),
+    )
+    .then((user) =>
+      res.status(REQUEST_CREATED).send({
         message: "User created",
         user: {
-          name: user.name,
           email: user.email,
+          password: user.password,
+          name: user.name,
           avatar: user.avatar,
         },
-      });
-    })
+      }),
+    )
     .catch((err) => {
       console.error(err);
 

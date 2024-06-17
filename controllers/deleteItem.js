@@ -1,5 +1,11 @@
 const ClothingItem = require("../models/clothingItem");
-const { INVALID_DATA, NOT_FOUND, SERVER_ERROR, REQUEST_SUCCESSFUL, FORBIDDEN_ACCESS } = require("../utils/errors");
+const {
+  INVALID_DATA,
+  NOT_FOUND,
+  SERVER_ERROR,
+  REQUEST_SUCCESSFUL,
+  FORBIDDEN_ACCESS,
+} = require("../utils/errors");
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
@@ -10,7 +16,8 @@ const deleteItem = (req, res) => {
 
     // console.log(itemId);
     // ClothingItem.deleteOne({ _id: itemId })
-    //   .orFail()
+      // .orFail()
+
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
       console.error(err);

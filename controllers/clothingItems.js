@@ -55,10 +55,6 @@ const deleteItem = (req, res) => {
     return ClothingItem.deleteOne({ _id: itemId });
   });
 
-  // if (err.name === "DocumentNotFoundError") {
-  //   return res.status(NOT_FOUND).send({ message: err.message });
-  // }
-
   console.log(itemId);
   ClothingItem.deleteOne({ _id: itemId })
     .orFail()
@@ -66,9 +62,9 @@ const deleteItem = (req, res) => {
     .catch((err) => {
       console.error(err);
 
-      // if (err.name === "DocumentNotFoundError") {
-      //   return res.status(NOT_FOUND).send({ message: err.message });
-      // }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
 
       if (itemId.owner === req.user._id) {
         return res
