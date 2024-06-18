@@ -157,14 +157,14 @@ const createUser = (req, res) => {
         password: hashedPassword,
       }),
     )
-    .then((user) =>
+    .then((userData) =>
       res.status(REQUEST_CREATED).send({
         message: "User created",
         user: {
-          email: user.email,
-          password: user.password,
-          name: user.name,
-          avatar: user.avatar,
+          email: userData.email,
+          password: userData.password,
+          name: userData.name,
+          avatar: userData.avatar,
         },
       }),
     )
