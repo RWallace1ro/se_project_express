@@ -6,6 +6,7 @@ const {
   REQUEST_SUCCESSFUL,
   REQUEST_CREATED,
   FORBIDDEN_ACCESS,
+  // UNAUTHORIZED,
 } = require("../utils/errors");
 
 const getItems = (_getItems, res) => {
@@ -45,41 +46,46 @@ const deleteItem = (req, res) => {
 
       res.status(NOT_FOUND).send({ message: "Item not found" });
     }
-
+    // if (!res.headersSent) {
     if (!item.owner.equals(itemId)) {
       return res
         .status(FORBIDDEN_ACCESS)
         .send({ message: "Not authorized to delete item" });
     }
-
+    // }
     return ClothingItem.deleteOne({ _id: itemId });
   });
 
   console.log(itemId);
-  ClothingItem.deleteOne({ _id: itemId })
+
+  return ClothingItem.deleteOne({ _id: itemId })
     .orFail()
+
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
+
     .catch((err) => {
       console.error(err);
 
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
-      }
+      if (!res.headersSent) {
+        if (err.name === "DocumentNotFoundError") {
+          return res.status(NOT_FOUND).send({ message: err.message });
+        }
 
-      if (itemId.owner === req.user._id) {
+        if (itemId.owner === req.user._id) {
+          return res
+            .status(FORBIDDEN_ACCESS)
+            .send({ message: "Not authorized to delete item" });
+        }
+        if (res.deletedCount === 0) {
+          return res.status(FORBIDDEN_ACCESS).send({ message: err.message });
+        }
+        if (err.name === "CastError") {
+          return res.status(INVALID_DATA).send({ message: "Invalid data" });
+        }
         return res
-          .status(FORBIDDEN_ACCESS)
-          .send({ message: "Not authorized to delete item" });
+          .status(SERVER_ERROR)
+          .send({ message: "An error has occurred on the server." });
       }
-      if (res.deletedCount === 0) {
-        return res.status(FORBIDDEN_ACCESS).send({ message: err.message });
-      }
-      if (err.name === "CastError") {
-        return res.status(INVALID_DATA).send({ message: "Invalid data" });
-      }
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
     });
 };
 

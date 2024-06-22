@@ -24,7 +24,7 @@ const login = (req, res) => {
       .send({ message: "Email and password are required" });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .select("+password")
     .then((user) => {
       if (!user) {
@@ -36,6 +36,7 @@ const login = (req, res) => {
 
       return bcrypt.compare(password, user.password).then((isMatch) => {
         if (!isMatch) {
+          console.log("User is not a match");
           return res
             .status(UNAUTHORIZED)
             .send({ message: "Invalid email or password" });
@@ -62,7 +63,7 @@ const login = (req, res) => {
 const getCurrentUser = (req, res) => {
   const userId = req.user._id;
 
-  User.findById(userId)
+  return User.findById(userId)
     .then((user) => {
       if (!user) {
         console.log("User not found:", userId);
@@ -80,6 +81,7 @@ const getCurrentUser = (req, res) => {
         },
       });
     })
+
     .catch((err) => {
       console.error("Error finding user:", err);
 
@@ -97,7 +99,7 @@ const updateUserProfile = (req, res) => {
   const userId = req.user._id;
   const { name, email, avatar } = req.body;
 
-  User.findByIdAndUpdate(
+  return User.findByIdAndUpdate(
     userId,
     { name, email, avatar },
     { new: true, runValidators: true },
@@ -140,7 +142,7 @@ const createUser = (req, res) => {
     return res.status(INVALID_DATA).send({ message: "Invalid data provided" });
   }
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .then((user) => {
       if (user) {
         return res
@@ -149,6 +151,7 @@ const createUser = (req, res) => {
       }
       return bcrypt.hash(password, 10);
     })
+
     .then((hashedPassword) =>
       User.create({
         name,
@@ -157,36 +160,34 @@ const createUser = (req, res) => {
         password: hashedPassword,
       }),
     )
-    .then((userData) =>
-      res.status(REQUEST_CREATED).send({
-        message: "User created",
-        user: {
-          email: userData.email,
-          password: userData.password,
-          name: userData.name,
-          avatar: userData.avatar,
-        },
-      }),
-    )
+
+    .then((user) => {
+      const userObject = user.toObject();
+      delete userObject.password;
+      res.status(REQUEST_CREATED).send({ userObject });
+    })
+
     .catch((err) => {
       console.error(err);
 
-      if (err.name === "ValidationError") {
-        const errorMessages = Object.values(err.errors).map((e) => e.message);
-        return res
-          .status(INVALID_DATA)
-          .send({ message: "Invalid data provided", errors: errorMessages });
-      }
+      if (!res.headersSent) {
+        if (err.name === "ValidationError") {
+          const errorMessages = Object.values(err.errors).map((e) => e.message);
+          return res
+            .status(INVALID_DATA)
+            .send({ message: "Invalid data provided", errors: errorMessages });
+        }
 
-      if (err.code === 11000) {
-        return res
-          .status(REQUEST_CONFLICT)
-          .send({ message: "Email already exists" });
-      }
+        if (err.code === 11000) {
+          return res
+            .status(REQUEST_CONFLICT)
+            .send({ message: "Email already exists" });
+        }
 
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+        return res
+          .status(SERVER_ERROR)
+          .send({ message: "An error has occurred on the server." });
+      }
     });
 };
 
