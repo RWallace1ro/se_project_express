@@ -4,10 +4,14 @@ const {
   createItem,
   deleteItem,
   likeItem,
-   dislikeItem,
+  dislikeItem,
 } = require("../controllers/clothingItems");
+const authorizationMiddleware = require("../middleware/auth");
 
 router.get("/", getItems);
+
+router.use(authorizationMiddleware);
+
 router.post("/", createItem);
 router.delete("/:itemId", deleteItem);
 router.put("/:itemId/likes", likeItem);

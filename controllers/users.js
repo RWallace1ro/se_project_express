@@ -30,7 +30,7 @@ const login = (req, res) => {
       if (!user) {
         console.log("did not find that user");
         return res
-          .status(INVALID_DATA)
+          .status(UNAUTHORIZED)
           .send({ message: "Invalid email or password" });
       }
 
@@ -78,8 +78,12 @@ const getCurrentUser = (req, res) => {
     .catch((err) => {
       console.error("Error finding user:", err);
 
-      if (err.name === "DocumentNotFoundError" || err.name === "CastError") {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+
+      if (err.name === "CastError") {
+        return res.status(INVALID_DATA).send({ message: "Invalid data" });
       }
 
       return res
@@ -128,15 +132,8 @@ const createUser = (req, res) => {
     return res.status(INVALID_DATA).send({ message: "Invalid data provided" });
   }
 
-  return User.findOne({ email })
-    .then((user) => {
-      if (user) {
-        return res
-          .status(REQUEST_CONFLICT)
-          .send({ message: "Email already exists" });
-      }
-      return bcrypt.hash(password, 10);
-    })
+  return bcrypt
+    .hash(password, 10)
 
     .then((hashedPassword) =>
       User.create({
@@ -156,25 +153,23 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
 
-      if (!res.headersSent) {
-        if (err.name === "ValidationError") {
-          const errorMessages = Object.values(err.errors).map((e) => e.message);
-          return res.status(INVALID_DATA).send({
-            message: "Invalid data provided",
-            errors: errorMessages,
-          });
-        }
-
-        if (err.code === 11000) {
-          return res
-            .status(REQUEST_CONFLICT)
-            .send({ message: "Email already exists" });
-        }
-
-        return res
-          .status(SERVER_ERROR)
-          .send({ message: "An error has occurred on the server." });
+      if (err.name === "ValidationError") {
+        const errorMessages = Object.values(err.errors).map((e) => e.message);
+        return res.status(INVALID_DATA).send({
+          message: "Invalid data provided",
+          errors: errorMessages,
+        });
       }
+
+      if (err.code === 11000) {
+        return res
+          .status(REQUEST_CONFLICT)
+          .send({ message: "Email already exists" });
+      }
+
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
