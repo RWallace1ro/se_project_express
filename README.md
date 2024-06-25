@@ -1,29 +1,30 @@
-# Project 12
+# Project 13
 
 ## Description and functionality
 
-Created a back-end server for the WTWR application.
+Set up user authorization and secure the server that host the application
 
-Initilized the database to stored the user and clothing item data.
+Expanded the user schema with an email and password
 
-Created schemas and models for the user and clothing items.
+Updated the createUser controller
 
-Implemented routes and controllers for the users and clothing items.
+Created routes and controllers for signing up and signing in
 
-Set up a database and connected it to the server.
+Created routes and controllers for modifying the current user data
 
-Configured the routes and controllers and handled errors.
+Created middleware for authorization
+
+Protected existing routes
 
 ## Technology and technique utilized
 
-The project required installing, setting up Express project, and creating an
-Express server in the project root to serve as an entry point. The Express Server was configured to run on port 3001.
+The project required installing a validator
 
 Utilized linter to find errors and maintian code consistency.
 
-Installed nodemon package as a dev dependency to ensure the server restart when the project files change. The application is launched with a hot reload when running the npm run dev command.
+Utilized nodemon package as a dev dependency to ensure the server restart when the project files change. The application is launched with a hot reload when running the npm run dev command.
 
-Installed MongoDB to ensure initilization of the database that store the user and clothing item data.
+Utilized MongoDB to ensure initilization of the database that store the user and clothing item data.
 
 Utilized Postman to create a test user to check the project; GitHub was also used for this process
 

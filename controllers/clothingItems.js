@@ -6,7 +6,6 @@ const {
   REQUEST_SUCCESSFUL,
   REQUEST_CREATED,
   FORBIDDEN_ACCESS,
-  // UNAUTHORIZED,
 } = require("../utils/errors");
 
 const getItems = (_getItems, res) => {
@@ -38,54 +37,41 @@ const createItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  ClothingItem.findOne({ _id: itemId }).then((item) => {
-    if (!item) {
-      res
-        .status(REQUEST_SUCCESSFUL)
-        .send({ message: "Item successfully deleted" });
+  ClothingItem.findOne({ _id: itemId })
+    .then((item) => {
+      if (!item) {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      }
 
-      res.status(NOT_FOUND).send({ message: "Item not found" });
-    }
-    // if (!res.headersSent) {
-    if (!item.owner.equals(itemId)) {
-      return res
-        .status(FORBIDDEN_ACCESS)
-        .send({ message: "Not authorized to delete item" });
-    }
-    // }
-    return ClothingItem.deleteOne({ _id: itemId });
-  });
+      if (!item.owner.equals(req.user._id)) {
+        return res
+          .status(FORBIDDEN_ACCESS)
+          .send({ message: "Not authorized to delete item" });
+      }
 
-  console.log(itemId);
-
-  return ClothingItem.deleteOne({ _id: itemId })
-    .orFail()
-
-    .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
-
+      return ClothingItem.deleteOne({ _id: itemId })
+        .then(() =>
+          res
+            .status(REQUEST_SUCCESSFUL)
+            .send({ message: "Item successfully deleted" }),
+        )
+        .catch((err) => {
+          console.error(err);
+          return res
+            .status(SERVER_ERROR)
+            .send({ message: "An error has occurred on the server." });
+        });
+    })
     .catch((err) => {
       console.error(err);
 
-      if (!res.headersSent) {
-        if (err.name === "DocumentNotFoundError") {
-          return res.status(NOT_FOUND).send({ message: err.message });
-        }
-
-        if (itemId.owner === req.user._id) {
-          return res
-            .status(FORBIDDEN_ACCESS)
-            .send({ message: "Not authorized to delete item" });
-        }
-        if (res.deletedCount === 0) {
-          return res.status(FORBIDDEN_ACCESS).send({ message: err.message });
-        }
-        if (err.name === "CastError") {
-          return res.status(INVALID_DATA).send({ message: "Invalid data" });
-        }
-        return res
-          .status(SERVER_ERROR)
-          .send({ message: "An error has occurred on the server." });
+      if (err.name === "CastError") {
+        return res.status(INVALID_DATA).send({ message: "Invalid data" });
       }
+
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
 

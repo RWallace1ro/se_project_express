@@ -72,14 +72,7 @@ const getCurrentUser = (req, res) => {
 
       console.log("User found:", user);
 
-      return res.status(REQUEST_SUCCESSFUL).send({
-        message: "User found",
-        user: {
-          name: user.name,
-          avatar: user.avatar,
-          email: user.email,
-        },
-      });
+      return res.status(REQUEST_SUCCESSFUL).send({ data: user });
     })
 
     .catch((err) => {
@@ -111,14 +104,7 @@ const updateUserProfile = (req, res) => {
 
       console.log("Updated user:", user);
 
-      return res.status(REQUEST_SUCCESSFUL).send({
-        message: "User profile updated",
-        user: {
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-        },
-      });
+      return res.status(REQUEST_SUCCESSFUL).send({ data: user });
     })
     .catch((err) => {
       console.error(err);
@@ -173,9 +159,10 @@ const createUser = (req, res) => {
       if (!res.headersSent) {
         if (err.name === "ValidationError") {
           const errorMessages = Object.values(err.errors).map((e) => e.message);
-          return res
-            .status(INVALID_DATA)
-            .send({ message: "Invalid data provided", errors: errorMessages });
+          return res.status(INVALID_DATA).send({
+            message: "Invalid data provided",
+            errors: errorMessages,
+          });
         }
 
         if (err.code === 11000) {
