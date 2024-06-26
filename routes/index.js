@@ -10,7 +10,7 @@ router.post("/signin", login);
 router.post("/signup", createUser);
 
 router.use("/users", authorizationMiddleware, userRouter);
-router.use("/items", authorizationMiddleware, clothingItemsRouter);
+router.use("/items", clothingItemsRouter);
 
 router.use((req, res) => {
   res.status(NOT_FOUND).send({ message: "Route not found" });
