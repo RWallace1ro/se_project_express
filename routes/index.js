@@ -1,5 +1,8 @@
 const router = require("express").Router();
 
+// const express = require("express");
+// const router = express.Router();
+
 const { login, createUser } = require("../controllers/users");
 const authorizationMiddleware = require("../middleware/auth");
 const userRouter = require("./users");
@@ -15,5 +18,9 @@ router.use("/items", clothingItemsRouter);
 router.use((req, res) => {
   res.status(NOT_FOUND).send({ message: "Route not found" });
 });
+
+// router.get("/", (req, res) => {
+//   res.send("Main route");
+// });
 
 module.exports = router;
