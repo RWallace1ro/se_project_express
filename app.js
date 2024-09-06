@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+require("dotenv").config();
 
 mongoose.set("strictQuery", false);
 
@@ -10,13 +11,13 @@ const { errors } = require("celebrate");
 const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
-// const app = express();
-
-// const { PORT = 3001 } = process.env;
-
-const express = require("express");
 const app = express();
-const PORT = process.env.PORT || 3001;
+
+const { PORT = 3001 } = process.env;
+
+// const express = require("express");
+// const app = express();
+// const PORT = process.env.PORT || 3001;
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
@@ -61,10 +62,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.listen(PORT, () => {
-//   console.log(`Server is running on port ${PORT}`);
-// });
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("Server is running on port ${PORT");
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
+
+// app.listen(PORT, "0.0.0.0", () => {
+//   console.log("Server is running on port ${PORT");
+// });
