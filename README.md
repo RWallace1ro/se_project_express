@@ -1,5 +1,7 @@
 # Project 15
 
+# Domain name: http://gingerfaith.jumpingcrab.com
+
 ## Description and functionality
 
 Set up user authorization and secure the server that host the application
