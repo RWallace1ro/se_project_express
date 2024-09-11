@@ -13,12 +13,10 @@ router.get("/", getItems);
 
 router.use(authorizationMiddleware);
 
-router.post("/", createItem);
-router.delete("/:itemId", deleteItem);
-router.put("/:itemId/likes", likeItem);
-router.delete("/:itemId/likes", dislikeItem);
+router.delete("/:itemId", validateId, deleteItem);
+router.put("/:itemId/likes", validateId, likeItem);
+router.delete("/:itemId/likes", validateId, dislikeItem);
 
 router.post("/", validateCardBody, createItem);
-router.delete("/:id", validateId, deleteItem);
 
 module.exports = router;

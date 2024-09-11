@@ -1,13 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
+const errorHandler = require("./middleware/error-handler");
+const routes = require("./routes");
 require("dotenv").config();
 
 mongoose.set("strictQuery", false);
 
 const routes = require("./routes/index");
-const { errors } = require("celebrate");
-const errorHandler = require("./middlewares/error-handler");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const app = express();
@@ -41,7 +42,7 @@ app.use(errorLogger);
 
 app.use(errors());
 
-app.use(errorHandler, () => {
+app.use(errorHandler, next, () => {
   console.log("Middleware function called");
   next();
 });
