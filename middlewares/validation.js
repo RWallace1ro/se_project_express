@@ -65,7 +65,7 @@ module.exports.validateId = celebrate({
   }),
 });
 
-modeule.exports.validateUserProfile = celebrate({
+module.exports.validateUserProfile = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30).required().messages({
       "string.min": "The name must be at least 2 characters long",

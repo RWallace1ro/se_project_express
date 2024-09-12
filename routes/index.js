@@ -1,29 +1,22 @@
 const { celebrate, Joi } = require("celebrate");
 const router = require("express").Router();
-const BadRequestError = require("../errors/BadRequestError");
-const UnauthorizedError = require("../errors/UnauthorizedError");
-const ForbiddenError = require("../errors/ForbiddenError");
+
 const NotFoundError = require("../errors/ForbiddenError");
-const ConflictError = require("../errors/ConflictError");
+
+const {
+  validateLogin,
+  validateUserBody,
+} = require("../middlewares/validation");
 
 const { login, createUser } = require("../controllers/users");
 const authorizationMiddleware = require("../middleware/auth");
 const userRouter = require("./users");
 const clothingItemsRouter = require("./clothingItems");
 
-// const validateSignin = celebrate({
-//   body: Joi.object().keys({
-//     email: Joi.string().email().required().messages({
-//       "string.email": "The email must be a valid email address",
-//       "string.empty": "The email field must be filled in",
-//     }),
-//     password: Joi.string().required().messages({
-//       "string.empty": "The password field must be filled in",
-//     }),
-//   }),
-// });
+// router.post("/signin", validateSignin, login);
 
-router.post("/signin", validateSignin, login);
+router.post("/signin", validateLogin, login);
+router.post("/signup", validateUserBody, createUser);
 
 const validateSignup = celebrate({
   body: Joi.object().keys({
@@ -55,10 +48,3 @@ router.use(() => {
 });
 
 module.exports = router;
-module.exports = {
-  BadRequestError,
-  UnauthorizedError,
-  ForbiddenError,
-  NotFoundError,
-  ConflictError,
-};

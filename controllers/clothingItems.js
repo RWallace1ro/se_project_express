@@ -1,9 +1,8 @@
 const ClothingItem = require("../models/clothingItem");
-const {
-  BadRequestError,
-  NotFoundError,
-  ForbiddenError,
-} = require("../errors/errors");
+
+const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
+const ForbiddenError = require("../errors/ForbiddenError");
 
 const {
   NOT_FOUND,
@@ -111,10 +110,9 @@ const dislikeItem = (req, res, next) => {
         return res.status(NOT_FOUND).send({ message: err.message });
       }
       if (err.name === "CastError") {
-        next(new BadRequestError("Invalid data"));
-      } else {
-        next(err);
+        return next(new BadRequestError("Invalid data"));
       }
+      return next(err);
     });
 };
 

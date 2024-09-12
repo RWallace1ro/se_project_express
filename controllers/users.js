@@ -3,17 +3,12 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
-const {
-  REQUEST_SUCCESSFUL,
-  NOT_FOUND,
-  REQUEST_CREATED,
-} = require("../errors/errors");
-const {
-  BadRequestError,
-  UnauthorizedError,
-  NotFoundError,
-  ConflictError,
-} = require("../routes");
+const { REQUEST_SUCCESSFUL, REQUEST_CREATED } = require("../errors/errors");
+
+const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
+const UnauthorizedError = require("../errors/UnauthorizedError");
+const ConflictError = require("../errors/ConflictError");
 
 const login = (req, res, next) => {
   console.log("trying to login");

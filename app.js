@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const { errors } = require("celebrate");
 const errorHandler = require("./middleware/error-handler");
-const routes = require("./routes");
+// const routes = require("./routes");
 require("dotenv").config();
 
 mongoose.set("strictQuery", false);
