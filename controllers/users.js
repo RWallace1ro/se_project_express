@@ -4,20 +4,16 @@ const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
 const {
-  // INVALID_DATA,
-  // SERVER_ERROR,
   REQUEST_SUCCESSFUL,
-  // UNAUTHORIZED,
   NOT_FOUND,
   REQUEST_CREATED,
-  // REQUEST_CONFLICT,
 } = require("../errors/errors");
 const {
   BadRequestError,
   UnauthorizedError,
   NotFoundError,
   ConflictError,
-} = require("../errors");
+} = require("../routes");
 
 const login = (req, res, next) => {
   console.log("trying to login");
@@ -25,8 +21,6 @@ const login = (req, res, next) => {
 
   if (!email || !password) {
     console.log("Password is undefined");
-    // return res
-    // .status(INVALID_DATA)
     throw new BadRequestError("Email and password are required");
   }
 
@@ -75,20 +69,11 @@ const getCurrentUser = (req, res, next) => {
 
     .catch((err) => {
       console.error("Error finding user:", err);
-
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
-      }
-
       if (err.name === "CastError") {
         next(new BadRequestError("Invalid data"));
       } else {
         next(err);
       }
-
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -118,9 +103,6 @@ const updateUserProfile = (req, res, next) => {
       } else {
         next(err);
       }
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occurred on the server." });
     });
 };
 

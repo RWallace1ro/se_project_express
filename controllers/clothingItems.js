@@ -6,9 +6,7 @@ const {
 } = require("../errors/errors");
 
 const {
-  INVALID_DATA,
   NOT_FOUND,
-  SERVER_ERROR,
   REQUEST_SUCCESSFUL,
   REQUEST_CREATED,
 } = require("../errors/errors");
@@ -23,8 +21,8 @@ const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
 
   if (!name || !weather || !imageUrl) {
-    throw new BadRequestError(
-      "Name, weather, and imageUrl are required fields",
+    next(
+      new BadRequestError("Name, weather, and imageUrl are required fields"),
     );
   }
 
@@ -33,7 +31,7 @@ const createItem = (req, res, next) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        throw new BadRequestError("Invalid data");
+        next(new BadRequestError("Invalid data"));
       } else {
         next(err);
       }
@@ -61,7 +59,7 @@ const deleteItem = (req, res, next) => {
         )
         .catch((err) => {
           if (err.name === "CastError") {
-            throw new BadRequestError("Invalid data");
+            next(new BadRequestError("Invalid data"));
           } else {
             next(err);
           }
@@ -75,10 +73,6 @@ const deleteItem = (req, res, next) => {
       } else {
         next(err);
       }
-
-      // return res
-      //   .status(SERVER_ERROR)
-      //   .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -94,20 +88,10 @@ const likeItem = (req, res, next) => {
     .then((item) => res.status(REQUEST_SUCCESSFUL).send(item))
     .catch((err) => {
       if (err.name === "CastError") {
-        throw new BadRequestError("Invalid data");
+        next(new BadRequestError("Invalid data"));
       } else {
         next(err);
       }
-      console.error(err);
-      if (err.name === "DocumentNotFoundError") {
-        return res.status(NOT_FOUND).send({ message: err.message });
-      }
-      if (err.name === "CastError") {
-        return res.status(INVALID_DATA).send({ message: "Invalid data" });
-      }
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -127,14 +111,10 @@ const dislikeItem = (req, res, next) => {
         return res.status(NOT_FOUND).send({ message: err.message });
       }
       if (err.name === "CastError") {
-        throw new BadRequestError("Invalid data");
+        next(new BadRequestError("Invalid data"));
       } else {
         next(err);
       }
-
-      return res
-        .status(SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
     });
 };
 

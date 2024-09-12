@@ -31,10 +31,6 @@ app.get("/crash-test", () => {
   }, 0);
 });
 
-app.use("/", routes);
-
-app.use(errors());
-
 app.use(requestLogger);
 app.use(routes);
 
@@ -42,22 +38,19 @@ app.use(errorLogger);
 
 app.use(errors());
 
-app.use(errorHandler, next, () => {
-  console.log("Middleware function called");
-  next();
-});
+app.use(errorHandler);
 
-app.use((err, req, res, next) => {
-  console.log("Test Middleware Function");
-  res.status(500).send("Test Error Middleware");
-  next();
-});
+// app.use((err, req, res, next) => {
+//   console.log("Test Middleware Function");
+//   res.status(500).send("Test Error Middleware");
+//   next();
+// });
 
-app.use((req, res, next) => {
-  console.log("Middleware function called");
-  res.send("Middleware function called");
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log("Middleware function called");
+//   res.send("Middleware function called");
+//   next();
+// });
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
