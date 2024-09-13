@@ -1,7 +1,7 @@
 const { celebrate, Joi } = require("celebrate");
 const router = require("express").Router();
 
-const NotFoundError = require("../errors/ForbiddenError");
+const NotFoundError = require("../errors/NotFoundError");
 
 const {
   validateLogin,
